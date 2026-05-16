@@ -131,6 +131,12 @@ export default function HomePage() {
           padding: 17px 24px;
           font-weight: 900;
           cursor: pointer;
+          transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .generate:hover {
+          transform: translateY(-1px);
+          opacity: 0.92;
         }
 
         .results {
@@ -214,14 +220,17 @@ function Generator() {
   const [platform, setPlatform] =
     useState<(typeof platforms)[number]>("TikTok");
   const [copied, setCopied] = useState("");
+  const [seed, setSeed] = useState(0);
 
   const finalTopic = formatTopic(topic);
 
   const hooks = useMemo(() => {
-    return hooksByCategory[platform].map((hook) =>
-      hook.replaceAll("{topic}", finalTopic)
-    );
-  }, [platform, finalTopic]);
+    const shuffled = [...hooksByCategory[platform]]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4);
+
+    return shuffled.map((hook) => hook.replaceAll("{topic}", finalTopic));
+  }, [platform, finalTopic, seed]);
 
   async function copyHook(text: string) {
     await navigator.clipboard.writeText(text);
@@ -250,7 +259,9 @@ function Generator() {
         </select>
       </div>
 
-      <button className="generate">Generate Hooks</button>
+      <button className="generate" onClick={() => setSeed((prev) => prev + 1)}>
+        Generate Hooks
+      </button>
 
       <section className="results">
         {hooks.map((hook) => (

@@ -1,152 +1,128 @@
+import type { Metadata } from "next";
+import { getCategoryBySlug, hookCategories } from "../../data/hooks";
+import HookGenerator from "../../components/HookGenerator";
+
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
-function formatSlug(slug: string) {
-  return slug
-    .replaceAll("-", " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+export async function generateStaticParams() {
+  return hookCategories.map((category) => ({
+    slug: category.slug,
+  }));
 }
 
-const hooks = [
-  "Nobody tells you this about {topic}...",
-  "This changed everything for {topic}.",
-  "The biggest mistake people make with {topic}.",
-  "Why your {topic} content gets ignored.",
-  "3 viral hook ideas for {topic}.",
-  "Stop creating {topic} content like this.",
-];
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const category = getCategoryBySlug(slug);
 
-export async function generateMetadata({ params }: Props) {
-  const topic = formatSlug(params.slug);
+  if (!category) {
+    return {
+      title: "Hook Generator - Hookify",
+    };
+  }
 
   return {
-    title: `${topic} Hooks Generator | Hookify`,
-    description: `Generate viral hooks for ${topic} content with Hookify.`,
+    title: `${category.name} Hook Generator - Hookify`,
+    description: category.description,
   };
 }
 
-export default function HooksForPage({ params }: Props) {
-  const topic = formatSlug(params.slug);
+export default async function HooksForPage({ params }: Props) {
+  const { slug } = await params;
+  const category = getCategoryBySlug(slug);
+
+  if (!category) {
+    return (
+      <main className="min-h-screen bg-[#05050a] px-4 py-20 text-white">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-4xl font-black">Category not found</h1>
+          <a href="/" className="mt-6 inline-flex rounded-full bg-white px-6 py-3 font-black text-black">
+            Back to Hookify
+          </a>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#050507",
-        color: "white",
-        padding: "40px",
-        fontFamily: "Arial",
-      }}
-    >
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <a href="/" style={{ color: "white" }}>
-          ← Back to Hookify
-        </a>
+    <main className="min-h-screen bg-[#05050a] text-white">
+      <section className="relative overflow-hidden px-4 py-10 md:px-8 md:py-16">
+        <div className="absolute left-1/2 top-0 h-[450px] w-[650px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-[120px]" />
 
-        <div style={{ marginTop: 40 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              padding: "10px 16px",
-              borderRadius: 999,
-              border: "1px solid rgba(255,255,255,.12)",
-              background: "rgba(255,255,255,.05)",
-              color: "rgba(255,255,255,.7)",
-            }}
-          >
-            SEO Landing Page
+        <div className="relative mx-auto max-w-7xl">
+          <a href="/" className="mb-10 inline-flex text-sm font-bold text-white/60 hover:text-white">
+            ← Back to Hookify
+          </a>
+
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="mb-4 text-sm font-black uppercase tracking-[0.3em] text-violet-300">
+              Free Hook Generator
+            </p>
+
+            <h1 className="text-5xl font-black leading-tight md:text-7xl">
+              {category.name} Hook Generator
+            </h1>
+
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/65">
+              Generate viral hooks for {category.audience}. Use these hooks for TikTok,
+              Instagram Reels, YouTube Shorts, LinkedIn, X, ads and content ideas.
+            </p>
           </div>
 
-          <h1
-            style={{
-              fontSize: "clamp(52px, 8vw, 92px)",
-              lineHeight: 0.95,
-              letterSpacing: "-0.08em",
-              margin: "26px 0",
-            }}
-          >
-            {topic} Hooks
-          </h1>
-
-          <p
-            style={{
-              maxWidth: 720,
-              color: "rgba(255,255,255,.6)",
-              fontSize: 20,
-              lineHeight: 1.7,
-            }}
-          >
-            Generate high-retention viral hooks for {topic} creators,
-            businesses and content marketers.
-          </p>
+          <div className="mt-12">
+            <HookGenerator />
+          </div>
         </div>
+      </section>
 
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-            gap: 18,
-            marginTop: 50,
-          }}
-        >
-          {hooks.map((hook) => (
-            <article
-              key={hook}
-              style={{
-                border: "1px solid rgba(255,255,255,.1)",
-                background: "rgba(255,255,255,.04)",
-                borderRadius: 28,
-                padding: 28,
-              }}
-            >
+      <section className="px-4 py-12 md:px-8">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-6 text-3xl font-black md:text-4xl">
+            Example {category.name} Hooks
+          </h2>
+
+          <div className="grid gap-3">
+            {category.hooks.map((hook, index) => (
               <div
-                style={{
-                  display: "inline-flex",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,.1)",
-                  color: "rgba(255,255,255,.45)",
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: ".18em",
-                  marginBottom: 18,
-                }}
+                key={hook}
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
-                Viral Hook
+                <p className="text-sm font-black text-violet-300">#{index + 1}</p>
+                <p className="mt-2 text-lg font-bold">{hook}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <h2
-                style={{
-                  fontSize: 28,
-                  lineHeight: 1.3,
-                  letterSpacing: "-0.04em",
-                  margin: 0,
-                }}
-              >
-                {hook.replaceAll("{topic}", topic)}
-              </h2>
+      <section className="px-4 py-12 md:px-8">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 md:p-10">
+          <h2 className="text-3xl font-black md:text-4xl">
+            How to use these hooks
+          </h2>
 
-              <button
-                style={{
-                  marginTop: 22,
-                  border: 0,
-                  background: "white",
-                  color: "black",
-                  borderRadius: 14,
-                  padding: "12px 16px",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                Copy Hook
-              </button>
-            </article>
-          ))}
-        </section>
-      </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              ["1", "Pick a hook", "Choose the hook that creates the strongest curiosity."],
+              ["2", "Add your story", "Connect the hook to your video, post, offer or lesson."],
+              ["3", "End with CTA", "Tell people to follow, comment, save, buy or learn more."],
+            ].map(([step, title, text]) => (
+              <div key={step} className="rounded-3xl bg-black/30 p-6">
+                <p className="text-3xl font-black text-violet-300">{step}</p>
+                <p className="mt-3 font-black">{title}</p>
+                <p className="mt-2 text-sm leading-6 text-white/60">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 px-4 py-8 text-center text-sm text-white/40">
+        © {new Date().getFullYear()} Hookify. Free {category.name} hook generator.
+      </footer>
     </main>
   );
 }
